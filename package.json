@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "esbuild src/index.tsx --bundle --minify --sourcemap --outdir=www --define:process.env.BASE_URL=\\\"https://api.lambda-team.club\\\"",
+    "build": "esbuild src/index.tsx --bundle --outfile=www/index.js --loader:.js=jsx",
     "start": "NODE_ENV=dev node ./serve.js",
     "watch": "esbuild --bundle src/index.tsx --outfile=www/main.js --watch"
   },
