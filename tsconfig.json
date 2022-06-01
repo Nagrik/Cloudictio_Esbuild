@@ -1,18 +1,34 @@
 {
   "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "jsx": "preserve",
+    "strict": true,
     "esModuleInterop": true,
-    "jsx": "react",
-    "module": "esnext",
-    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "baseUrl": "src",
+    "paths": {
+      "@/*": [
+        "*"
+      ]
+    },
     "lib": [
       "dom",
+      "dom.iterable",
       "esnext"
     ],
-    "strict": true,
-    "sourceMap": true,
-    "target": "esnext",
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "incremental": true,
+    "moduleResolution": "node",
+    "isolatedModules": true
   },
-  "include": ["src/**/*", "./esbuild.config.js"],
+  "include": [
+    "src/**/*",
+    "./webpack.config.ts"
+  ],
   "exclude": [
     "node_modules"
   ]

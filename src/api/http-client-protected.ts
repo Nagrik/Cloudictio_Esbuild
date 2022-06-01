@@ -1,10 +1,10 @@
 import { AxiosRequestConfig } from 'axios';
-import HttpClient from "./http-client";
-import TokensLocalStorage from "../local-storage/TokensLocalStorage";
+import HttpClient from '@/api/http-client';
+import TokensLocalStorage from '@/local-storage/TokensLocalStorage';
 
 export default abstract class HttpClientProtected extends HttpClient {
-  public constructor(baseURL: string | undefined) {
-    super(baseURL);
+  public constructor(baseURL: string | undefined, contentType = 'application/json') {
+    super(baseURL, contentType);
 
     this.initializeRequestInterceptor();
   }
@@ -19,7 +19,6 @@ export default abstract class HttpClientProtected extends HttpClient {
 
     const modifiedConfig = config;
 
-    // @ts-ignore
     modifiedConfig.headers.Authorization = `Bearer ${token}`;
 
     return config;

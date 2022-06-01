@@ -8,22 +8,30 @@ import thunk from 'redux-thunk';
 import { connectRouter, routerMiddleware } from 'connected-react-router';
 import { createBrowserHistory } from 'history';
 
+import Main from '@/api/main';
+import MainProtected from '@/api/main-protected';
 
-import initialReducer from './reducers/initial';
-import Main from "../api/main";
-import MainProtected from "../api/main-protected";
-import {InitialActions} from "./actions/initial";
+import { InitialActions } from '@/store/actions/login';
+import { userActionsType } from '@/store/actions/user';
+import { companyActionsType } from '@/store/actions/company';
+import MainProtectedFormData from '@/api/main-protected-formData';
+import loginReducer from './reducers/login';
+import userReducer from './reducers/user';
+import companyReducer from './reducers/company';
 
 export const history = createBrowserHistory();
 
 export const api = {
   mainApi: Main.getInstance(),
   mainProtectedApi: MainProtected.getInstance(),
+  mainProtectedFormData: MainProtectedFormData.getInstance(),
 };
 
 const rootReducer = combineReducers({
   router: connectRouter(history),
-  initialReducer,
+  loginReducer,
+  userReducer,
+  companyReducer,
 });
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -34,6 +42,8 @@ const enhancer = composeEnhancers(
 
 export type State = ReturnType<typeof rootReducer>;
 export type Actions =
-    | InitialActions;
+    | InitialActions
+    | userActionsType
+    | companyActionsType;
 
 export default createStore(rootReducer, enhancer);

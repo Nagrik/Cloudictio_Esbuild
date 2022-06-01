@@ -3,13 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="Drizzle Company" />
-    <title>Drizzle Company</title>
+    <script src="/index.js" async defer></script>
+    <link rel="stylesheet" href="/index.css" />
   </head>
-  <body style="margin: 0; padding: 0">
+  <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+
+    <script>
+      (() => (new EventSource("/create-serve").onmessage = () => location.reload()))();
+    </script>
   </body>
-  <script src="./main.js"></script>
 </html>
