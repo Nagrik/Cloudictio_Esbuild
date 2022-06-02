@@ -25,6 +25,7 @@ import CheckCircle from '@/Components/common/icons/CheckCircle';
 import Circle from '@/Components/common/icons/Circle';
 import InvalidDataPopup from '@/Components/InvalidDataPopup';
 import LoaderDots from '@/Components/common/LoaderDots';
+import {AppDispatch} from "@/App";
 
 interface Props extends RouteComponentProps<{
   developerId:string
@@ -35,7 +36,7 @@ const DeveloperPage:FC<Props> = ({ match }) => {
   const { developerId, companyId } = match.params;
   const classes = useStyles();
   const history = useHistory();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const [confirm, setConfirm] = useToggle(false);
   const [email, setEmail] = useInput();
@@ -112,99 +113,100 @@ const DeveloperPage:FC<Props> = ({ match }) => {
   const handleUpdatePermissions = () => {
     if (user) {
       dispatch(changeAdminInfo(Number(companyId),
-        uploadCsv,
-        downloadCsv,
-        deleteCsv,
-        Number(developerId)));
+          uploadCsv,
+          downloadCsv,
+          deleteCsv,
+          Number(developerId)));
     }
   };
 
   return (
-    <>
-      {
-      !developerInfo || !user
-        ? (
-          <Loader />
-        ) : (
-          <div className={classes.root}>
-            <div className={classes.error}>
+      <>
 
+        <div className={classes.root}>
+          <div className={classes.error}>
+
+            {
+              popup ? <InvalidDataPopup text={invalidEmailText} /> : null
+            }
+          </div>
+          <div style={{ minHeight: '100vh' }}>
+            <Header user={user} />
+            <div className={classes.wrapper}>
               {
-                popup ? <InvalidDataPopup text={invalidEmailText} /> : null
-              }
-            </div>
-            <div style={{ minHeight: '100vh' }}>
-              <Header user={user} />
-              <div className={classes.wrapper}>
-                <div className={classes.managerWrapper}>
-                  <div className={classes.managerInfo}>
-                    <div className={classes.managerInfoWrapper}>
-                      <div className={classes.wrapper_link}>
-                        <div className={classes.name_email}>
-                          <div className={classes.managerName}>{developerInfo.name}</div>
-                          <div className={classes.managerEmail}>{developerInfo.email}</div>
-                        </div>
-                        <div className={classes.PermWithButton}>
+                !user || !developerInfo ? <Loader /> : (
+                    <div className={classes.managerWrapper}>
+                      <div className={classes.managerInfo}>
+                        <div className={classes.managerInfoWrapper}>
+                          <div className={classes.wrapper_link}>
+                            <div className={classes.name_email}>
+                              <div className={classes.managerName}>{developerInfo.name}</div>
+                              <div className={classes.managerEmail}>{developerInfo.email}</div>
+                            </div>
+                            <div className={classes.PermWithButton}>
+                              {
+                                user.role === 'customer' && user.email !== developerInfo.email ? (
+                                    <div className={classes.SaveWrapp}>
+                                      <div
+                                          className={classes.button}
+                                          onClick={handleUpdatePermissions}
+                                      >
+                                        {isLoading ? <LoaderDots /> : 'Save'}
+                                      </div>
+                                      <div className={classes.PermWrapp}>
+                                        <div
+                                            className={classes.Perm__item}
+                                            onClick={() => setDownloadCsv(!downloadCsv)}
+                                        >
+                                          {downloadCsv ? <CheckCircle /> : <Circle />}
+                                          <span className={classes.list_item}>Download csv</span>
+                                        </div>
+                                        <div
+                                            className={classes.Perm__item}
+                                            onClick={() => setEditCSV(!uploadCsv)}
+                                        >
+                                          {uploadCsv ? <CheckCircle /> : <Circle />}
+                                          <span className={classes.list_item}>Upload csv</span>
+                                        </div>
+                                        <div
+                                            className={classes.Perm__item}
+                                            onClick={() => setDeleteCSV(!deleteCsv)}
+                                        >
+                                          {deleteCsv ? <CheckCircle /> : <Circle />}
+                                          <span className={classes.list_item}>Delete csv</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                ) : null
+                              }
+                            </div>
+                          </div>
                           {
                             user.role === 'customer' && user.email !== developerInfo.email ? (
-                              <div className={classes.SaveWrapp}>
                                 <div
-                                  className={classes.button}
-                                  onClick={handleUpdatePermissions}
+                                    className={classes.managerDelete}
+                                    onClick={changeConfirmBlock}
                                 >
-                                  {isLoading ? <LoaderDots /> : 'Save'}
+                                  Delete developer
                                 </div>
-                                <div className={classes.PermWrapp}>
-                                  <div
-                                    className={classes.Perm__item}
-                                    onClick={() => setDownloadCsv(!downloadCsv)}
-                                  >
-                                    {downloadCsv ? <CheckCircle /> : <Circle />}
-                                    <span className={classes.list_item}>Download csv</span>
-                                  </div>
-                                  <div
-                                    className={classes.Perm__item}
-                                    onClick={() => setEditCSV(!uploadCsv)}
-                                  >
-                                    {uploadCsv ? <CheckCircle /> : <Circle />}
-                                    <span className={classes.list_item}>Upload csv</span>
-                                  </div>
-                                  <div
-                                    className={classes.Perm__item}
-                                    onClick={() => setDeleteCSV(!deleteCsv)}
-                                  >
-                                    {deleteCsv ? <CheckCircle /> : <Circle />}
-                                    <span className={classes.list_item}>Delete csv</span>
-                                  </div>
-                                </div>
-                              </div>
                             ) : null
                           }
+
                         </div>
                       </div>
-                      {
-                                  user.role === 'customer' && user.email !== developerInfo.email ? (
-                                    <div
-                                      className={classes.managerDelete}
-                                      onClick={changeConfirmBlock}
-                                    >
-                                      Delete developer
-                                    </div>
-                                  ) : null
-                                }
-
                     </div>
-                  </div>
-                </div>
-                <PopConfirm
+
+                )
+              }
+              <PopConfirm
                   position="admin"
                   text="Are you sure delete this developer?"
                   closeConfirm={closeConfirm}
                   confirm={confirm}
                   confirmDelete={confirmDelete}
                   hide={closeConfirm}
-                />
-                <Popup
+              />
+              <Popup
                   isActive={isChangeSuccess}
                   text="Permissions was changed"
                   style={{
@@ -216,13 +218,11 @@ const DeveloperPage:FC<Props> = ({ match }) => {
                   padding={16}
                   autoClose={2000}
                   hide={toggleIsChangeSuccess}
-                />
-              </div>
+              />
             </div>
           </div>
-        )
-            }
-    </>
+        </div>
+      </>
   );
 };
 const useStyles = makeStyles({

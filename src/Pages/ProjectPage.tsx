@@ -52,7 +52,7 @@ import axios from 'axios';
 import TokensLocalStorage from '@/local-storage/TokensLocalStorage';
 import FilesDragAndDrop from '@yelysei/react-files-drag-and-drop';
 import LoadingCsv from '@/Components/LoadingCsv';
-import user from '@/store/reducers/user';
+import {AppDispatch} from "@/App";
 
 interface Props extends RouteComponentProps<{
   companyId:string
@@ -95,7 +95,8 @@ const ProjectPage:React.FC<Props> = ({ match }) => {
   const isSuccessCSV = useSelector(selectIsSuccessCSV);
   const isCloseModal = useSelector(selectIsCloseModal);
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+
 
   useEffect(() => {
     setIsLoadingCsv(false);
@@ -254,11 +255,11 @@ const ProjectPage:React.FC<Props> = ({ match }) => {
     if (user && CompanyInfo) {
       if (validateEmail(email)) {
         dispatch(createAdmin(CompanyInfo.project.id,
-          email,
-          name,
-          uploadCsv,
-          downloadCsv,
-          deleteCsv));
+            email,
+            name,
+            uploadCsv,
+            downloadCsv,
+            deleteCsv));
         setTimeout(() => {
           setDeleteCSV(false);
           setEditCSV(false);
@@ -286,15 +287,14 @@ const ProjectPage:React.FC<Props> = ({ match }) => {
     window.open(`${process.env.BASE_URL}/${pathToCsv}`, '_blank')!.focus();
   };
   return (
-    <>
-      { !CompanyInfo || !user ? <Loader /> : (
+      <>
         <>
           <div className={classes.container}>
             <div className={classes.error}>
 
               {
-                  popup ? <InvalidDataPopup text={InvalidDataMessage || invalidEmailText} /> : null
-                }
+                popup ? <InvalidDataPopup text={InvalidDataMessage || invalidEmailText} /> : null
+              }
             </div>
             <div className={classes.wrapper}>
               <div className={classes.content}>
@@ -307,19 +307,19 @@ const ProjectPage:React.FC<Props> = ({ match }) => {
                       </div>
                     </div>
                     {
-                      user.role === 'customer' ? (
-                        <div className={classes.button}>
-                          <Button
-                            onClick={handleOpenAddManagerModal}
-                            height="32px"
-                            fontSize={12}
-                            fontWeight={600}
-                            flexDirection="row-reverse"
-                          >
-                            ADD MEMBER
-                            <span className={classes.plus}>+</span>
-                          </Button>
-                        </div>
+                      user?.role === 'customer' ? (
+                          <div className={classes.button}>
+                            <Button
+                                onClick={handleOpenAddManagerModal}
+                                height="32px"
+                                fontSize={12}
+                                fontWeight={600}
+                                flexDirection="row-reverse"
+                            >
+                              ADD MEMBER
+                              <span className={classes.plus}>+</span>
+                            </Button>
+                          </div>
                       ) : null
                     }
                   </div>
@@ -329,388 +329,398 @@ const ProjectPage:React.FC<Props> = ({ match }) => {
                     </div>
                   </div>
                   {
-                    !csvInfo ? (
-                      <div className={classes.drop}>
-                        <div className={classes.noManagerWrapper}>
+                    !user || !CompanyInfo ? <Loader /> : (
+                        <>
                           {
-                            !fileArr && CompanyInfo.users.map((userC) => ((user.email === userC.email && userC.uploadCsv)) && (
-                              <FilesDragAndDrop
-                                onUpload={(file:any) => handleSubmitCSV(file)}
-                                count={1}
-                                formats={['csv']}
-                                containerStyles={{
-                                  position: 'relative',
-                                  width: '596px',
-                                  height: '162px',
-                                  cursor: 'pointer',
-                                  fontSize: '14px',
-                                  fontWeight: '500',
-                                  border: '1px dashed',
-                                }}
-                                hoverMessageStyles={{ fontSize: '16px' }}
-                                successTime={0}
-                                openDialogOnClick
-                                hoverText="Drop your file here"
-                              >
-                                <div style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  height: '162px',
-                                  flexDirection: 'column',
-                                }}
-                                >
-                                  {!fileArr && !isLoadingCsv && 'Upload or drop csv here'}
-                                  {
-                            isLoadingCsv && progress !== 100 && <LoadingCsv progress={progress} />
-                                }
+                            !csvInfo ? (
+                                <div className={classes.drop}>
+                                  <div className={classes.noManagerWrapper}>
+                                    {
+                                        !fileArr && CompanyInfo.users.map((userC) => ((user.email === userC.email && userC.uploadCsv)) && (
+                                            <FilesDragAndDrop
+                                                onUpload={(file:any) => handleSubmitCSV(file)}
+                                                count={1}
+                                                formats={['csv']}
+                                                containerStyles={{
+                                                  position: 'relative',
+                                                  width: '596px',
+                                                  height: '162px',
+                                                  cursor: 'pointer',
+                                                  fontSize: '14px',
+                                                  fontWeight: '500',
+                                                  border: '1px dashed',
+                                                }}
+                                                hoverMessageStyles={{ fontSize: '16px' }}
+                                                successTime={0}
+                                                openDialogOnClick
+                                                hoverText="Drop your file here"
+                                            >
+                                              <div style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                height: '162px',
+                                                flexDirection: 'column',
+                                              }}
+                                              >
+                                                {!fileArr && !isLoadingCsv && 'Upload or drop csv here'}
+                                                {
+                                                    isLoadingCsv && progress !== 100 && <LoadingCsv progress={progress} />
+                                                }
+                                              </div>
+                                            </FilesDragAndDrop>
+                                        ))
+                                    }
+                                    {
+                                        !fileArr && CompanyInfo.users.map((userC) => {
+                                          if (user.email === userC.email && !userC.uploadCsv) {
+                                            return (<h1>CSV file not uploaded yet</h1>);
+                                          }
+                                        })
+                                    }
+                                  </div>
                                 </div>
-                              </FilesDragAndDrop>
-                            ))
-                          }
-                          {
-                          !fileArr && CompanyInfo.users.map((userC) => {
-                            if (user.email === userC.email && !userC.uploadCsv) {
-                              return (<h1>CSV file not uploaded yet</h1>);
-                            }
-                          })
-                          }
-                        </div>
-                      </div>
-                    ) : (
-                      <div className={classes.CSVWrapper}>
-                        <div className={classes.csv_wrapper}>
-                          <div className={classes.csv_text}>
-                            name:
-                            {' '}
-                            {
-                              CompanyInfo.project.pathToCsv
-                                ? CompanyInfo.project.pathToCsv && CompanyInfo.project.pathToCsv
-                                  .split('/')[3] : null
-                            }
-                          </div>
-                          <div
-                            className={classes.csv_text}
-                            style={{ paddingTop: '11px' }}
-                          >
-                            date:
-                            {' '}
-                            {
-                               CompanyInfo.project.pathToDictionary
-                                 ? new Date(Number(CompanyInfo.project.pathToDictionary
-                                   .split('/')[2])).toLocaleDateString('en-US') : null
-                             }
-                          </div>
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          {
-                            CompanyInfo.users.map((userC) => {
-                              if (userC.email === user.email && userC.uploadCsv) {
-                                return (
-                                  <>
-                                    <label htmlFor="upload-csv" className={classes.label} style={{ cursor: 'pointer' }}>
-                                      {isLoadingCsv ? (
-                                        <div className={classes.loader}>
-                                          <div />
-                                        </div>
-                                      )
-                                        : <UploadIcon />}
-                                    </label>
-                                    <input
-                                      className={classes.InputCSV}
-                                      type="file"
-                                      onChange={(e) => handleCSVChange(e)}
-                                      accept=".csv"
-                                      id="upload-csv"
-                                    />
-                                  </>
-                                );
-                              }
-                            })
-                          }
-                          {
-                              CompanyInfo.users.map((userC) => user.email === userC.email && userC.deleteCsv && (
-                              <>
-                                <div style={{ padding: '15px 15px', borderLeft: '1px solid #E0E1E2' }} onClick={handleDeletePopup}>
-
-                                  {isLoading ? (
-                                    <div className={classes.loader}>
-                                      <div />
+                            ) : (
+                                <div className={classes.CSVWrapper}>
+                                  <div className={classes.csv_wrapper}>
+                                    <div className={classes.csv_text}>
+                                      name:
+                                      {' '}
+                                      {
+                                        CompanyInfo.project.pathToCsv
+                                            ? CompanyInfo.project.pathToCsv && CompanyInfo.project.pathToCsv
+                                            .split('/')[3] : null
+                                      }
                                     </div>
-                                  )
-                                    : <TrashIcon />}
-                                </div>
+                                    <div
+                                        className={classes.csv_text}
+                                        style={{ paddingTop: '11px' }}
+                                    >
+                                      date:
+                                      {' '}
+                                      {
+                                        CompanyInfo.project.pathToDictionary
+                                            ? new Date(Number(CompanyInfo.project.pathToDictionary
+                                                .split('/')[2])).toLocaleDateString('en-US') : null
+                                      }
+                                    </div>
+                                  </div>
 
-                              </>
-                              ))
-                            }
-                          <PopConfirm
-                            position="bottom"
-                            text="Are you sure delete this CSV?"
-                            closeConfirm={closeConfirm}
-                            confirm={deletePopup}
-                            confirmDelete={confirmDelete}
-                            hide={closeConfirm}
-                          />
-                          {
-                            CompanyInfo.users.map((userC, index) => (user.email === userC.email && userC.downloadCsv ? (
-                              <div style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                fontSize: '11px',
-                                textAlign: 'center',
-                                padding: '5px',
-                                borderLeft: '1px solid #E0E1E2',
-                              }}
-                              >
-                                <div style={{ padding: '5px' }}>
-                                  Download for:
+                                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    {
+                                      CompanyInfo.users.map((userC) => {
+                                        if (userC.email === user.email && userC.uploadCsv) {
+                                          return (
+                                              <>
+                                                <label htmlFor="upload-csv" className={classes.label} style={{ cursor: 'pointer' }}>
+                                                  {isLoadingCsv ? (
+                                                          <div className={classes.loader}>
+                                                            <div />
+                                                          </div>
+                                                      )
+                                                      : <UploadIcon />}
+                                                </label>
+                                                <input
+                                                    className={classes.InputCSV}
+                                                    type="file"
+                                                    onChange={(e) => handleCSVChange(e)}
+                                                    accept=".csv"
+                                                    id="upload-csv"
+                                                />
+                                              </>
+                                          );
+                                        }
+                                      })
+                                    }
+                                    {
+                                      CompanyInfo.users.map((userC) => user.email === userC.email && userC.deleteCsv && (
+                                          <>
+                                            <div style={{ padding: '15px 15px', borderLeft: '1px solid #E0E1E2' }} onClick={handleDeletePopup}>
+
+                                              {isLoading ? (
+                                                      <div className={classes.loader}>
+                                                        <div />
+                                                      </div>
+                                                  )
+                                                  : <TrashIcon />}
+                                            </div>
+
+                                          </>
+                                      ))
+                                    }
+                                    <PopConfirm
+                                        position="bottom"
+                                        text="Are you sure delete this CSV?"
+                                        closeConfirm={closeConfirm}
+                                        confirm={deletePopup}
+                                        confirmDelete={confirmDelete}
+                                        hide={closeConfirm}
+                                    />
+                                    {
+                                      CompanyInfo.users.map((userC, index) => (user.email === userC.email && userC.downloadCsv ? (
+                                          <div style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            fontSize: '11px',
+                                            textAlign: 'center',
+                                            padding: '5px',
+                                            borderLeft: '1px solid #E0E1E2',
+                                          }}
+                                          >
+                                            <div style={{ padding: '5px' }}>
+                                              Download for:
+                                            </div>
+                                            <div className={classes.Icons}>
+                                              <div className={classes.iconWrapp}>
+                                                <AndroidIcon />
+                                              </div>
+                                              <div
+                                                  className={classes.iconWrapp}
+                                                  onClick={() => handleDownloadCSV(CompanyInfo.project.pathToCsv)}
+                                              >
+                                                <IOSIcon />
+                                              </div>
+                                              <div className={classes.iconWrapp}>
+                                                <WindowsIcon />
+                                              </div>
+                                              <div className={classes.iconWrapp}>
+                                                <CloudIcon />
+                                              </div>
+                                            </div>
+                                          </div>
+                                      ) : null))
+                                    }
+                                  </div>
+
                                 </div>
-                                <div className={classes.Icons}>
-                                  <div className={classes.iconWrapp}>
-                                    <AndroidIcon />
-                                  </div>
-                                  <div
-                                    className={classes.iconWrapp}
-                                    onClick={() => handleDownloadCSV(CompanyInfo.project.pathToCsv)}
-                                  >
-                                    <IOSIcon />
-                                  </div>
-                                  <div className={classes.iconWrapp}>
-                                    <WindowsIcon />
-                                  </div>
-                                  <div className={classes.iconWrapp}>
-                                    <CloudIcon />
-                                  </div>
-                                </div>
-                              </div>
-                            ) : null))
+                            )
                           }
-                        </div>
-
-                      </div>
+                        </>
                     )
                   }
                   <div className={classes.managers}>
                     <div className={classes.managers__title}>
                       Users
                     </div>
-
                   </div>
+                  {
+                    !user || !CompanyInfo ? (<Loader />) : (
+                        <>
+                          <div>
+                            <div className={classes.xeroMain}>
+                              {
+                                CompanyInfo.users.map((userC: User) => {
+                                  if (CompanyInfo.users.length === 1 && userC.role === 'customer') {
+                                    return (
+                                        <div className={classes.noManager}>
+                                          <div className={classes.noManagerWrapper}>
+                                            <div className={classes.noManager__text}>
+                                              You don’t have users
+                                            </div>
+                                            <div className={classes.button}>
+                                              <div
+                                                  className={classes.addManager}
+                                                  onClick={handleOpenAddManagerModal}
+                                              >
+                                                ADD USER
+                                              </div>
+                                            </div>
 
-                  <div>
-                    <div className={classes.xeroMain}>
-                      {
-                      CompanyInfo.users.map((userC: User) => {
-                        if (CompanyInfo.users.length === 1 && userC.role === 'customer') {
-                          return (
-                            <div className={classes.noManager}>
-                              <div className={classes.noManagerWrapper}>
-                                <div className={classes.noManager__text}>
-                                  You don’t have users
-                                </div>
-                                <div className={classes.button}>
-                                  <div
-                                    className={classes.addManager}
-                                    onClick={handleOpenAddManagerModal}
-                                  >
-                                    ADD USER
-                                  </div>
-                                </div>
+                                          </div>
+                                        </div>
+                                    );
+                                  }
+                                })
+                              }
+                              {
+                                  CompanyInfo.users.length > 1 && CompanyInfo.users.map((userC) => {
+                                    if (userC.role === 'customer') {
+                                      return;
+                                    }
+                                    return (
+                                        <Managers key={userC.id} admins={userC} companyId={companyId} />
 
-                              </div>
+                                    );
+                                  })
+                              }
                             </div>
-                          );
-                        }
-                      })
-                        }
-                      {
-                        CompanyInfo.users.length > 1 && CompanyInfo.users.map((userC) => {
-                          if (userC.role === 'customer') {
-                            return;
-                          }
-                          return (
-                            <Managers key={userC.id} admins={userC} companyId={companyId} />
+                          </div>
 
-                          );
-                        })
-                      }
-                    </div>
-                  </div>
+                        </>
+                    )
+                  }
                 </div>
               </div>
             </div>
           </div>
           <Popup
-            isActive={isChangeSuccess}
-            text="User has been created"
-            style={{
-              maxWidth: '520px',
-              width: 'calc(100% - 32px)',
-              position: 'fixed',
-            }}
-            bottom={86}
-            padding={16}
-            autoClose={2000}
-            hide={toggleIsChangeSuccess}
+              isActive={isChangeSuccess}
+              text="User has been created"
+              style={{
+                maxWidth: '520px',
+                width: 'calc(100% - 32px)',
+                position: 'fixed',
+              }}
+              bottom={86}
+              padding={16}
+              autoClose={2000}
+              hide={toggleIsChangeSuccess}
           />
           <Popup
-            isActive={isChangeSuccessCSV}
-            text="CSV was upload"
-            style={{
-              maxWidth: '520px',
-              width: 'calc(100% - 32px)',
-              position: 'fixed',
-            }}
-            bottom={86}
-            padding={16}
-            autoClose={2000}
-            hide={toggleIsChangeSuccessCSV}
+              isActive={isChangeSuccessCSV}
+              text="CSV was upload"
+              style={{
+                maxWidth: '520px',
+                width: 'calc(100% - 32px)',
+                position: 'fixed',
+              }}
+              bottom={86}
+              padding={16}
+              autoClose={2000}
+              hide={toggleIsChangeSuccessCSV}
           />
           {modal ? (
-            <div
-              className={classes.container__modal}
-            >
-              <div ref={modalRef}>
-                <div className={classes.XeroWrapper}>
-                  <div
-                    className={classes.close}
-                    onClick={handleCloseModal}
-                  >
-                    <CloseIcon color="#21272e" />
-                  </div>
+              <div
+                  className={classes.container__modal}
+              >
+                <div ref={modalRef}>
+                  <div className={classes.XeroWrapper}>
+                    <div
+                        className={classes.close}
+                        onClick={handleCloseModal}
+                    >
+                      <CloseIcon color="#21272e" />
+                    </div>
 
-                  <div className={classes.XeroContent}>
-                    <h1 className={classes.Title}>
-                      Add new user
-                    </h1>
-                    <input
-                      type="text"
-                      className={classes.Input}
-                      placeholder="Full name"
-                      required
-                      onChange={setName}
-                    />
-                    <input
-                      type="email"
-                      className={classes.Input}
-                      placeholder="Email"
-                      required
-                      onChange={setEmail}
-                    />
-                    <div style={{ display: 'flex', paddingTop: '30px' }}>Permissions:</div>
-                    <div style={{ display: 'flex', alignItems: 'center', paddingTop: '15px' }} onClick={() => setEditCSV(!uploadCsv)}>
-                      {
-                        uploadCsv ? <CheckCircle /> : <Circle />
-                      }
-                      <span style={{ paddingLeft: '5px' }}>
-                        Upload csv
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', paddingTop: '15px' }} onClick={() => setDownloadCsv(!downloadCsv)}>
-                      {
-                        downloadCsv ? <CheckCircle /> : <Circle />
-                      }
-                      <span style={{ paddingLeft: '5px' }}>
-                        Download csv
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', paddingTop: '15px' }} onClick={() => setDeleteCSV(!deleteCsv)}>
-                      {
-                        deleteCsv ? <CheckCircle /> : <Circle />
-                      }
-                      <span style={{ paddingLeft: '5px' }}>
-                        Delete csv
-                      </span>
-                    </div>
-                    <div className={classes.Button}>
-                      <Button
-                        disabledOnly={!name || !email}
-                        onClick={handleCreateManager}
-                        height="40px"
-                        fontSize={15}
-                        fontWeight={600}
-                      >
-                        {isLoading ? <LoaderDots /> : 'Next'}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : null}
-          {modalCSV ? (
-            <div
-              className={classes.container__modal}
-            >
-              <div ref={modalRefCSV}>
-                <div className={classes.CSV_modal_wrapper}>
-                  <div
-                    className={classes.close}
-                    onClick={handleCloseCSVModal}
-                  >
-                    <CloseIcon color="#21272e" />
-                  </div>
-
-                  <div className={classes.XeroContent}>
-                    <h1 className={classes.Title}>
-                      Upload your file here
-                    </h1>
-                    <form onSubmit={(e) => handleSubmitCSV(e)}>
-
-                      <div className={classes.labelWrapp}>
-                        <label htmlFor="upload-csv" className={classes.label}>Browse...</label>
-                        <div style={{ fontSize: '12px' }}>{file ? file.name : 'file name'}</div>
-                        <input
-                          className={classes.InputCSV}
-                          type="file"
-                          onChange={(e) => handleCSVChange(e)}
-                          accept=".csv"
-                          id="upload-csv"
-                        />
+                    <div className={classes.XeroContent}>
+                      <h1 className={classes.Title}>
+                        Add new user
+                      </h1>
+                      <input
+                          type="text"
+                          className={classes.Input}
+                          placeholder="Full name"
+                          required
+                          onChange={setName}
+                      />
+                      <input
+                          type="email"
+                          className={classes.Input}
+                          placeholder="Email"
+                          required
+                          onChange={setEmail}
+                      />
+                      <div style={{ display: 'flex', paddingTop: '30px' }}>Permissions:</div>
+                      <div style={{ display: 'flex', alignItems: 'center', paddingTop: '15px' }} onClick={() => setEditCSV(!uploadCsv)}>
+                        {
+                          uploadCsv ? <CheckCircle /> : <Circle />
+                        }
+                        <span style={{ paddingLeft: '5px' }}>
+                      Upload csv
+                    </span>
                       </div>
-                      <div style={{ position: 'relative', paddingTop: '50px' }}>
-                        <div style={{ fontSize: '12px' }}>{`${Math.floor(progress)}%`}</div>
-                        <div style={{
-                          width: `${progress}%`,
-                          position: 'absolute',
-                          top: '67px',
-                          height: '7px',
-                          backgroundColor: 'rgb(24, 144, 255)',
-                        }}
-                        />
-                        <div style={{
-                          width: '100%',
-                          height: '7px',
-                          backgroundColor: '#ccc',
-                          marginTop: '5px',
-                        }}
-                        />
+                      <div style={{ display: 'flex', alignItems: 'center', paddingTop: '15px' }} onClick={() => setDownloadCsv(!downloadCsv)}>
+                        {
+                          downloadCsv ? <CheckCircle /> : <Circle />
+                        }
+                        <span style={{ paddingLeft: '5px' }}>
+                      Download csv
+                    </span>
                       </div>
-                      <div className={classes.ButtonCSV}>
+                      <div style={{ display: 'flex', alignItems: 'center', paddingTop: '15px' }} onClick={() => setDeleteCSV(!deleteCsv)}>
+                        {
+                          deleteCsv ? <CheckCircle /> : <Circle />
+                        }
+                        <span style={{ paddingLeft: '5px' }}>
+                      Delete csv
+                    </span>
+                      </div>
+                      <div className={classes.Button}>
                         <Button
-                          disabledOnly={!file}
-                          type="submit"
-                          onClick={(e:any) => handleSubmitCSV(e)}
-                          height="40px"
-                          fontSize={15}
-                          fontWeight={600}
+                            disabledOnly={!name || !email}
+                            onClick={handleCreateManager}
+                            height="40px"
+                            fontSize={15}
+                            fontWeight={600}
                         >
-                          {fileLoading ? <LoaderDots /> : 'Upload file'}
+                          {isLoading ? <LoaderDots /> : 'Next'}
                         </Button>
                       </div>
-                    </form>
-
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+          ) : null}
+          {modalCSV ? (
+              <div
+                  className={classes.container__modal}
+              >
+                <div ref={modalRefCSV}>
+                  <div className={classes.CSV_modal_wrapper}>
+                    <div
+                        className={classes.close}
+                        onClick={handleCloseCSVModal}
+                    >
+                      <CloseIcon color="#21272e" />
+                    </div>
+
+                    <div className={classes.XeroContent}>
+                      <h1 className={classes.Title}>
+                        Upload your file here
+                      </h1>
+                      <form onSubmit={(e) => handleSubmitCSV(e)}>
+
+                        <div className={classes.labelWrapp}>
+                          <label htmlFor="upload-csv" className={classes.label}>Browse...</label>
+                          <div style={{ fontSize: '12px' }}>{file ? file.name : 'file name'}</div>
+                          <input
+                              className={classes.InputCSV}
+                              type="file"
+                              onChange={(e) => handleCSVChange(e)}
+                              accept=".csv"
+                              id="upload-csv"
+                          />
+                        </div>
+                        <div style={{ position: 'relative', paddingTop: '50px' }}>
+                          <div style={{ fontSize: '12px' }}>{`${Math.floor(progress)}%`}</div>
+                          <div style={{
+                            width: `${progress}%`,
+                            position: 'absolute',
+                            top: '67px',
+                            height: '7px',
+                            backgroundColor: 'rgb(24, 144, 255)',
+                          }}
+                          />
+                          <div style={{
+                            width: '100%',
+                            height: '7px',
+                            backgroundColor: '#ccc',
+                            marginTop: '5px',
+                          }}
+                          />
+                        </div>
+                        <div className={classes.ButtonCSV}>
+                          <Button
+                              disabledOnly={!file}
+                              type="submit"
+                              onClick={(e:any) => handleSubmitCSV(e)}
+                              height="40px"
+                              fontSize={15}
+                              fontWeight={600}
+                          >
+                            {fileLoading ? <LoaderDots /> : 'Upload file'}
+                          </Button>
+                        </div>
+                      </form>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
           ) : null}
         </>
 
-      )}
-    </>
+      </>
   );
 };
 const useStyles = makeStyles({
